@@ -4,8 +4,8 @@
     <title>Spring Security Example</title>
 </head>
 <body>
-<h1>User, welcome spring boot security page!</h1>
-
+<h1 th:text="${user.getFirstName()}+' '+${user.getLastName()}+', welcome spring boot security page!'"></h1>
+<button type="button" th:onclick="|window.location.href='/logout'|">Log out</button>
 
 </body>
 </html>
