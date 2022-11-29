@@ -79,7 +79,12 @@ public class UserDaoImp implements UserDao {
         } else {
             user.setRoles(findById(user.getId()).getRoles());
         }
-        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+
+        if (!user.getPassword().matches("")) {
+            user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        } else {
+            user.setPassword(findById(user.getId()).getPassword());
+        }
 
         return entityManager.merge(user);
     }
