@@ -1,6 +1,7 @@
 package ru.kata.spring.boot_security.demo.controllers;
 
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +11,7 @@ import ru.kata.spring.boot_security.demo.service.UserService;
 
 
 @Controller
-@RequestMapping("/admin/users")
+@RequestMapping
 public class AdminController {
 
     private final UserService userService;
@@ -21,42 +22,47 @@ public class AdminController {
         this.roleDao = roleDao;
     }
 
-    @GetMapping
-    public String printUsers(Model model) {
+    @GetMapping("/adminPanel")
+    public String printUsers(@AuthenticationPrincipal User user, Model model) {
 
         model.addAttribute("users", userService.listUsers());
-        model.addAttribute("user", new User());
+        model.addAttribute("user", user);
         model.addAttribute("rolesList", roleDao.listRoles());
 
-        return "users";
+        return "adminPanel";
     }
 
-    @PostMapping()
+    @GetMapping("/adminUser")
+    public String showUser(@AuthenticationPrincipal User user, Model model) {
+        model.addAttribute("user", user);
+        return "adminUser";
+    }
+
+    @GetMapping("/adminPanel/addUser")
+    public String forAddUser(@AuthenticationPrincipal User user, Model model) {
+        model.addAttribute("user", user);
+        model.addAttribute("rolesList", roleDao.listRoles());
+        return "addUser";
+    }
+
+    @PostMapping("/adminPanel/addUser")
     public String create(@ModelAttribute("user") User user, @RequestParam(value = "rolesId") Long[] rolesId) {
         userService.add(user, rolesId);
-        return "redirect:/admin/users";
+        return "redirect:/adminPanel";
     }
 
-    @GetMapping(value = "/edit")
-    public String edit(Model model, @RequestParam Long id) {
+    @PatchMapping(value = "adminPanel/edit")
+    public String update(@ModelAttribute("user") User user,
+                         @RequestParam(value = "rolesId", required = false) Long[] rolesId) {
 
-        model.addAttribute("user", userService.findById(id));
-        model.addAttribute("rolesList", roleDao.listRoles());
-
-        return "edit";
-    }
-
-    @PatchMapping(value = "/edit")
-    public String update(@ModelAttribute("user") User user, @RequestParam(value = "rolesId", required = false) Long[] rolesId) {
         userService.updateUser(user, rolesId);
-        return "redirect:/admin/users";
+        return "redirect:/adminPanel";
     }
 
-    @GetMapping(value = "/delete")
-    @DeleteMapping()
+    @DeleteMapping("adminPanel/delete")
     public String delete(@RequestParam("id") Long id) {
         userService.deleteUserById(id);
-        return "redirect:/admin/users";
+        return "redirect:/adminPanel";
     }
 
 }
