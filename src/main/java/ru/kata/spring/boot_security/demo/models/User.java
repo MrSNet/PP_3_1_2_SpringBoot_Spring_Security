@@ -1,12 +1,15 @@
 package ru.kata.spring.boot_security.demo.models;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -33,12 +36,12 @@ public class User implements UserDetails {
     @Size(min = 2, message = "Enter at least 2 characters")
     private String password;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-//    @ManyToMany
-/*    @JoinTable(name = "users_roles",
-            joinColumns = @JoinColumn(name = "id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )*/
+    @ManyToMany(fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
+    @JoinTable(name = "users_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "roles_role_id")
+    )
     private List<Role> roles;
 
     public User() {}
@@ -50,13 +53,6 @@ public class User implements UserDetails {
         this.email = email;
         this.password = password;
         this.roles = roles;
-    }
-
-    public User(Long id, String firstName, String lastName, String email) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
     }
 
     public Long getId() {
@@ -99,15 +95,6 @@ public class User implements UserDetails {
         return roles;
     }
 
-    public String getRolesInStrings() {
-        StringBuilder sb = new StringBuilder();
-        for (Role role : roles) {
-            sb.append(role.getName() + " ");
-        }
-
-        return sb.toString();
-    }
-
     public void setRoles(List<Role> roles) {
         this.roles = roles;
     }
@@ -147,17 +134,4 @@ public class User implements UserDetails {
         return true;
     }
 
-//    @Override
-//    public boolean equals(Object o) {
-//        if (this == o) return true;
-//        if (o == null || getClass() != o.getClass()) return false;
-//        User that = (User) o;
-//        return Objects.equals(firstName, that.firstName) && Objects.equals(lastName, that.lastName)
-//                && Objects.equals(email, that.email);
-//    }
-//
-//    @Override
-//    public int hashCode() {
-//        return Objects.hash(firstName, lastName, email);
-//    }
 }
